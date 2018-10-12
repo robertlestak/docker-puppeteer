@@ -1,7 +1,9 @@
 FROM ubuntu:16.04
 
+WORKDIR /usr/src/app
+
 RUN apt-get update && \
-    apt-get install -y curl && \
+    apt-get install -y curl git && \
     curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
     apt-get install -y nodejs
 
@@ -16,11 +18,9 @@ RUN apt-get update && apt-get install -y wget --no-install-recommends \
     && apt-get update \
     && apt-get install -y curl
 
-RUN yarn add puppeteer
+COPY . .
 
-RUN yarn install
-
-COPY . /usr/src/app
+RUN npm install --save puppeteer && npm install
 
 # Add pptr user.
 RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
@@ -30,7 +30,9 @@ RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
     && chown -R pptruser:pptruser node_modules
 
 # Run user as non privileged.
+
+RUN chown -R pptruser:pptruser /usr/src/app
+
 USER pptruser
 
 CMD ["node", "src/index"]
-
